@@ -1,0 +1,193 @@
+"""
+road_simulation.py
+Full Self Driving Simulation mode in Kigali: ALU Rwanda -> Convention Center
+
+Your job: complete TODO 1 to TODO 10 below (replace each `pass`).
+Do NOT edit engine.py, index.html or transit_program.py.
+Run with:   python road_simulation.py or python3 road_simulation.py
+"""
+
+SEGMENT_M = 100
+ZEBRA_WAIT = 15
+ACCELERATION = 5
+BRAKING = 20
+START_NAME = "ALU Rwanda"
+END_NAME = "Convention Center"
+
+# Each item in the road list is ONE segment of road. On the screen each segment is 100 m long
+road = [
+    "60", "road", "road", "road", "zebra", "road", "road",
+    "80", "road", "road", "road", "road", "road", "road",
+    "bus", "road", "road", "bus", "road", "road","road",
+    "60", "road", "road", "road", "road","80", "road", 
+    "road","zebra", "road", "road","road", "road",
+]
+
+
+# ==================== PART 1: CHECK THE SIGN ====================
+
+# TODO 1: Return True only if sign is text AND is "bus", "zebra",
+# or a number from 20 to 100 written as text (e.g. "80"). Otherwise False.
+def is_valid_sign(sign):
+    # Must be text
+    if not isinstance(sign, str):
+        return False
+
+    # "bus" and "zebra" are allowed
+    if sign == "bus" or sign == "zebra":
+        return True
+
+    # A number written as text, from 20 to 100
+    if sign.isdecimal():
+        number = int(sign)
+        if 20 <= number <= 100:
+            return True
+
+    return False
+
+
+# TODO 2: Return "bus", "zebra", "speed" (a number) or "road" (anything else).
+def get_sign_type(sign):
+    # Anything that is not a valid sign is plain road
+    if not is_valid_sign(sign):
+        return "road"
+
+    if sign == "bus":
+        return "bus"
+
+    if sign == "zebra":
+        return "zebra"
+
+    # What is left must be a number from 20 to 100
+    return "speed"
+
+# ==================== PART 2: TAKE ACTION ====================
+
+# TODO 3: If the sign is a speed sign, return its number as an int. Else return current_limit.
+def get_speed_limit(sign, current_limit):
+    if get_sign_type(sign) == "speed":
+        return int(sign)
+    return current_limit
+# TODO 4: Return 0 while stop_timer is above 0, otherwise return limit.
+def get_target_speed(limit, stop_timer):
+    if stop_timer > 0:
+        return 0
+    return limit
+
+
+
+
+
+# TODO 5: Move speed ONE step towards target and return it.
+def adjust_speed(speed, target):
+    # Below target: speed up, but never go above the target
+    if speed < target:
+        speed = speed + ACCELERATION
+        if speed > target:
+            speed = target
+
+    # Above target: brake, but never go below the target
+    elif speed > target:
+        speed = speed - BRAKING
+        if speed < target:
+            speed = target
+
+    return speed
+
+
+
+
+
+
+
+
+
+
+    # Below target: speed up, but never go above the target
+
+    # Above target: brake, but never go below the target
+
+
+
+# TODO 6: Use a loop. Return (speed_signs, zebras, buses).
+def count_signs(road_list):
+    speed_signs = 0
+    zebras = 0
+    buses = 0
+
+    for sign in road_list:
+        sign_type = get_sign_type(sign)
+        if sign_type == "speed":
+            speed_signs = speed_signs + 1
+        elif sign_type == "zebra":
+            zebras = zebras + 1
+        elif sign_type == "bus":
+            buses = buses + 1
+
+    return (speed_signs, zebras, buses)
+
+
+# ==================== PART 3: SAFE INPUT AND JOURNEY SUMMARY ====================
+
+# TODO 7: Keep asking until the user types a whole number from low to high.
+# Use try/except for text that is not a number. Return the number as an int.
+def ask_for_number(question, low, high):
+    while True:
+        answer = input(question)
+
+        # Try to turn the answer into a whole number
+        try:
+            number = int(answer)
+        except ValueError:
+            print("  Please type a whole number, not text.")
+            continue
+
+        # Check the number is in range
+        if low <= number <= high:
+            return number
+
+        print(f"  Please type a number from {low} to {high}.")
+
+
+# TODO 8: Insert sign at position. Return False if position is not from 0 to len(road_list).
+# Otherwise insert and return True.
+def insert_sign(road_list, sign, position):
+    # Position must be from 0 to len(road_list)
+    if position < 0 or position > len(road_list):
+        return False
+
+    road_list.insert(position, sign)
+    return True
+
+
+# TODO 9: Replace the sign at index with a new sign. Return False if index is not
+# from 0 to len(road_list) - 1. Otherwise replace it and return True.
+def replace_sign(road_list, sign, index):
+    # Index must be from 0 to len(road_list) - 1
+    if index < 0 or index >= len(road_list):
+        return False
+
+    road_list[index] = sign
+    return True
+
+
+# TODO 10: Summarise the journey. Use a loop to count the signs we pass
+# (every segment that is not "road"). Return four values:
+# (signs_passed, length_m, START_NAME, END_NAME)
+# length_m is the number of segments times SEGMENT_M.
+def get_journey_summary(road_list):
+    signs_passed = 0
+
+    for sign in road_list:
+        if sign != "road":
+            signs_passed = signs_passed + 1
+
+    length_m = len(road_list) * SEGMENT_M
+
+    return (signs_passed, length_m, START_NAME, END_NAME)
+
+
+if __name__ == "__main__":
+    import sys
+    import transit_program
+    transit_program.run(sys.modules[__name__])
